@@ -7,7 +7,8 @@ const path = require('path');
 const prefix = '!'
 
 client.on('ready', () => {
-    console.log(`%s ${client.user.username} is online!`, chalk.bgBlue.white.bold(' SUCCESS '))
+    console.log(`%s ${client.user.username} is online!`, chalk.bgRgb(0, 150, 0).white.bold(" SUCCESS ")
+    )
 })
 
 client.on('message', async (msg) => {
