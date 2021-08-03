@@ -72,7 +72,7 @@ export const createProject = async (opts) => {
         chalk.bold('\ntarget-dir: '), targetDirectory,
         chalk.bold('\nopts: '), opts,
     );
-    opts.verbose && console.log('Create an issue at: \n', chalk.underline.blue('https://github.com/Nemesisly/create-discordjs-project/issues'), '\n');
+    opts.verbose && console.log('Found a bug? Create an issue at: \n', chalk.underline.blue('https://github.com/Nemesisly/create-discordjs-project/issues'), '\n');
 
     try {
         await access(templateDir, fs.constants.R_OK);
