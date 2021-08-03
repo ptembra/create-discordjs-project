@@ -58,12 +58,21 @@ export const createProject = async (opts) => {
         opts.template.toLowerCase()
     ).concat('\\').replace('%20', ' ');
 
+
     const targetDirectory = `./${opts.targetDir}/`
 
 
-    opts.targetDir = targetDirectory
+    opts.targetDir = targetDirectory;
 
     opts.templateDirectory = templateDir;
+
+    opts.verbose && console.log(
+        chalk.red.bold('\n VERBOSE MODE \n '),
+        chalk.bold('\ntemplate-dir: '), templateDir,
+        chalk.bold('\ntarget-dir: '), targetDirectory,
+        chalk.bold('\nopts: '), opts,
+    );
+    opts.verbose && console.log('Create an issue at: \n', chalk.underline.blue('https://github.com/Nemesisly/create-discordjs-project/issues'), '\n');
 
     try {
         await access(templateDir, fs.constants.R_OK);
@@ -75,20 +84,20 @@ export const createProject = async (opts) => {
     const tasks = new Listr(
         [
             {
-                title: '📜 Copying project files',
+                title: !opts.verbose ? '📜 Copying project files' : '',
                 task: () => copyTemplateFiles(opts),
             },
             {
-                title: '❌ Creating gitignore',
+                title: !opts.verbose ? '❌ Creating gitignore' : '',
                 task: () => createGitignore(opts),
             },
             {
-                title: '☁ Initializing git',
+                title: !opts.verbose ? '☁ Initializing git' : '',
                 task: () => initGit(opts),
                 enabled: () => opts.git,
             },
             {
-                title: '🚚 Installing dependencies',
+                title: !opts.verbose ? '🚚 Installing dependencies' : '',
                 task: () =>
                     projectInstall({
                         cwd: opts.targetDir,
@@ -106,7 +115,7 @@ export const createProject = async (opts) => {
 
     await tasks.run()
     console.log('%s Project ready', chalk.green.bold('DONE'))
-    console.log(
+    opts.verbose || console.log(
         'Here are some commands you can run in the project: ',
         chalk.cyanBright(`\n\n${opts.pkgManager} start`),
         '\n Starts the bot',
@@ -115,6 +124,6 @@ export const createProject = async (opts) => {
         chalk.cyanBright('cd'),
         `${rawDirectory.trim()}\n`,
         chalk.cyanBright(`${opts.pkgManager} start\n`))
-    console.log('Happy hacking!')
+    opts.verbose || console.log('Happy hacking!')
     return true;
 }

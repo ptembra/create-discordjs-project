@@ -1,14 +1,19 @@
 {
   "name": "create-discordjs-project",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "A CLI that creates a simple discordjs project",
   "main": "src/index.js",
   "bin": {
     "@nemesisly/create-discordjs-project": "bin/create-discordjs-project",
     "create-discordjs-project": "bin/create-discordjs-project"
   },
+  "homepage": "https://github.com/Nemesisly/create-discordjs-project",
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nemesisly/create-discordjs-project"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -22,6 +27,7 @@
     "cli",
     "create-project"
   ],
+  "private": false,
   "author": "Nemesisly",
   "license": "MIT",
   "dependencies": {

@@ -12,6 +12,8 @@ const parseArgumentsIntoOptions = (rawArgs) => {
             '-g': Boolean,
             '-y': Boolean,
             '-i': Boolean,
+            '-v': Boolean,
+            '--verbose': Boolean,
         },
         {
             argv: rawArgs.slice(2)
@@ -25,6 +27,7 @@ const parseArgumentsIntoOptions = (rawArgs) => {
         skipPrompts: args['--yes', '-y'] || false,
         runInstall: args['--install', '-i'] || false,
         git: args['--git', '-g'] || false,
+        verbose: args['--verbose', '-v']
     }
 }
 
@@ -99,5 +102,4 @@ export async function cli(args) {
     opts = await promptMissingOptions(opts)
 
     await createProject(opts)
-
 }
