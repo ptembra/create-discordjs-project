@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const chalk = require('chalk')
 const { config } = require('dotenv')
+const path = require('path');
 
 const prefix = '!'
 
@@ -22,7 +23,7 @@ client.on('message', async (msg) => {
 })
 
 config({
-    path: __dirname + "/.env",
+    path: path.resolve(process.cwd(), '../.env')
 });
 
 client.login(process.env.TOKEN).catch(e => {

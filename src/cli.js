@@ -19,9 +19,9 @@ const parseArgumentsIntoOptions = (rawArgs) => {
     )
 
     return {
-        targetDir: args._[0],
+        targetDir: args._[0] || null,
         template: args._[1],
-        // pkgManager: args._[2],
+        pkgManager: args._[2],
         skipPrompts: args['--yes', '-y'] || false,
         runInstall: args['--install', '-i'] || false,
         git: args['--git', '-g'] || false,
@@ -50,15 +50,15 @@ const promptMissingOptions = async (opts) => {
                 default: defaultTemplate
             })
         }
-        // if (!opts.pkgManager) {
-        //     questions.push({
-        //         type: 'list',
-        //         name: 'pkgManager',
-        //         message: 'Please choose a package manager',
-        //         choices: ['npm', 'yarn'],
-        //         default: defaultPkgManager
-        //     })
-        // }
+        if (!opts.pkgManager) {
+            questions.push({
+                type: 'list',
+                name: 'pkgManager',
+                message: 'Please choose a package manager',
+                choices: ['npm', 'yarn'],
+                default: defaultPkgManager
+            })
+        }
         if (!opts.git) {
             questions.push({
                 type: 'confirm',
@@ -98,6 +98,6 @@ export async function cli(args) {
     let opts = parseArgumentsIntoOptions(args);
     opts = await promptMissingOptions(opts)
 
-    console.log(opts)
     await createProject(opts)
+
 }
