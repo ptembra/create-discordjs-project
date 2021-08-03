@@ -1,13 +1,13 @@
 {
   "name": "create-discordjs-project",
-  "version": "1.0.7",
+  "version": "1.0.6",
   "description": "A CLI that creates a simple discordjs project",
   "main": "src/index.js",
   "bin": {
     "@nemesisly/create-discordjs-project": "bin/create-discordjs-project",
     "create-discordjs-project": "bin/create-discordjs-project"
   },
-  "homepage": "https://github.com/Nemesisly/create-discordjs-project",
+  "homepage": "https://github.com/Nemesisly/create-discordjs-project#readme",
   "publishConfig": {
     "access": "public"
   },
