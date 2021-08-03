@@ -56,7 +56,7 @@ export const createProject = async (opts) => {
         process.platform === "win32" ? fullPathName.substr(3) : fullPathName,
         '../../templates',
         opts.template.toLowerCase()
-    ).concat('\\').replace('%20', ' ');
+    ).replace('%20', ' ');
 
 
     const targetDirectory = `./${opts.targetDir}/`
