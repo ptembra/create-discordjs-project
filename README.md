@@ -1,4 +1,4 @@
-﻿![[Install Size] https://packagephobia.com/result?p=create-discordjs-project](https://packagephobia.com/badge?p=create-discordjs-project)
+![[Install Size] https://packagephobia.com/result?p=create-discordjs-project](https://packagephobia.com/badge?p=create-discordjs-project)
 
 ![[NPM Version] https://www.npmjs.com/package/create-discordjs-project](https://img.shields.io/npm/v/create-discordjs-project.svg?style=flat)
 
@@ -24,10 +24,11 @@ With NPX
 npx create-discordjs-project my-bot
 ```
 
-With NPM
+Install globally with NPM
 
 ```sh
-npm create-discordjs-project
+npm i -g create-discordjs-project
+create-discordjs-project my-bot
 ```
 
 **_Yarn isn't supported yet._**
