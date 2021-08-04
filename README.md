@@ -24,7 +24,7 @@ With NPX
 npx create-discordjs-project my-bot
 ```
 
-Install globally
+Install globally with NPM
 
 ```sh
 npm i -g create-discordjs-project
