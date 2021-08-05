@@ -6,7 +6,6 @@ import path from "path";
 import execa from "execa";
 import { projectInstall } from "pkg-install";
 import Listr from "listr";
-import boxen from "boxen";
 import gitignore from 'gitignore'
 
 const access = promisify(fs.access)
@@ -52,19 +51,19 @@ export const createProject = async (opts) => {
 
     const rawDirectory = opts.targetDir
 
-    const templateDir = path.join(
-        process.platform === "win32" ? fullPathName.substr(3) : fullPathName,
-        '../../templates',
-        opts.template.toLowerCase()
-    ).replace('%20', ' ');
-
-
     const targetDirectory = `./${opts.targetDir}/`
-
 
     opts.targetDir = targetDirectory;
 
+    const templateDir = path.join(
+        process.platform === "win32" ? fullPathName.substr(3) : fullPathName,
+        `${targetDirectory}/node_modules/create-discordjs-project`,
+        opts.template.toLowerCase()
+    ).replace('%20', ' ');
+
     opts.templateDirectory = templateDir;
+
+    console.log(opts.templateDir)
 
     opts.verbose && console.log(
         chalk.red.bold('\n VERBOSE MODE \n '),
@@ -84,7 +83,7 @@ export const createProject = async (opts) => {
     const tasks = new Listr(
         [
             {
-                title: !opts.verbose ? '📜 Copying project files' : '',
+                title: !opts.verbose ? '📜 Copying project template' : '',
                 task: () => copyTemplateFiles(opts),
             },
             {
@@ -93,7 +92,7 @@ export const createProject = async (opts) => {
             },
             {
                 title: !opts.verbose ? '☁ Initializing git' : '',
-                task: () => initGit(opts),
+                task: () => gitInit(opts),
                 enabled: () => opts.git,
             },
             {
@@ -117,13 +116,13 @@ export const createProject = async (opts) => {
     console.log('%s Project ready', chalk.green.bold('DONE'))
     opts.verbose || console.log(
         'Here are some commands you can run in the project: ',
-        chalk.cyanBright(`\n\n${opts.pkgManager} start`),
+        chalk.magenta(`\n\n${opts.pkgManager} start`),
         '\n Starts the bot',
         chalk.gray.italic(' → The bot is run using nodemon meaning that if you save anything the code automatically restarts!'),
         '\n\nWe suggest you run:\n\n',
-        chalk.cyanBright('cd'),
+        chalk.magenta('cd'),
         `${rawDirectory.trim()}\n`,
-        chalk.cyanBright(`${opts.pkgManager} start\n`))
+        chalk.magenta(`${opts.pkgManager} start\n`))
     opts.verbose || console.log('Happy hacking!')
     return true;
 }

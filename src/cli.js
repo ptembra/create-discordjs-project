@@ -2,6 +2,8 @@ import arg from 'arg';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import { createProject } from './main';
+import execa from 'execa';
+import { stdout } from 'execa';
 
 const parseArgumentsIntoOptions = (rawArgs) => {
     const args = arg(
@@ -30,10 +32,22 @@ const parseArgumentsIntoOptions = (rawArgs) => {
         verbose: args['--verbose', '-v']
     }
 }
+// Recieves template and checks if the template passed is valid.
+const validateTemplate = async (t) => {
+    const { stdout } = await execa('npm', ['info', t, '--json']);
+    res = JSON.parse(stdout)
+    console.log(res)
+    if (res.indexOf("cdjs-template")) {
+        return true
+    }
+    else {
+        return false
+    }
+}
 
 const promptMissingOptions = async (opts) => {
     if (opts.targetDir) {
-        const defaultTemplate = 'javascript';
+        const defaultTemplate = '@create-discordjs-project/javascript-template';
         const defaultPkgManager = 'npm'
         if (opts.skipPrompts) {
             return {
@@ -46,10 +60,10 @@ const promptMissingOptions = async (opts) => {
         const questions = [];
         if (!opts.template) {
             questions.push({
-                type: 'list',
+                type: 'input',
                 name: 'template',
                 message: 'Please choose a template',
-                choices: ['JavaScript', 'TypeScript'],
+                validate: () => validateTemplate(),
                 default: defaultTemplate
             })
         }
