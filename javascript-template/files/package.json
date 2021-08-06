@@ -1,0 +1,19 @@
+{
+  "main": "./src/main.js",
+  "scripts": {
+    "start": "nodemon"
+  },
+  "keywords": [
+    "cdjs-template"
+  ],
+  "author": "Nemesisly",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "discord.js": "^12.5.3",
+    "dotenv": "^10.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
+}
