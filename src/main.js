@@ -1,129 +1,160 @@
 import chalk from "chalk";
-import fs from 'fs'
+import fs from "fs";
+import { readdir } from "fs/promises";
 import { promisify } from "util";
-import ncp from "ncp";
 import path from "path";
 import execa from "execa";
-import { projectInstall } from "pkg-install";
 import Listr from "listr";
-import boxen from "boxen";
-import gitignore from 'gitignore'
+import VerboseRenderer from "listr-verbose-renderer";
 
-const access = promisify(fs.access)
-const copy = promisify(ncp);
+import copyTemplateFiles from "./functions/copyTemplateFiles";
+import createDirectory from "./functions/createDirectory";
+
+// REMOVE LATER
+import gitignore from "gitignore";
+import { projectInstall } from "pkg-install";
+
 const writeGitignore = promisify(gitignore.writeFile);
-const writeFile = promisify(fs.writeFile);
 
-const copyTemplateFiles = async (opts) => {
-    return copy(opts.templateDirectory, opts.targetDir, { clobber: false })
-}
-
-async function createGitignore(opts) {
-    const file = fs.createWriteStream(
-        path.join(opts.targetDir, '.gitignore'),
-        { flags: 'a' }
-    );
-    return writeGitignore({
-        type: 'Node',
-        file: file,
-    });
-}
+const createGitignore = async (opts) => {
+  const file = fs.createWriteStream(path.join(opts.targetDir, ".gitignore"), {
+    flags: "a",
+  });
+  return writeGitignore({
+    type: "Node",
+    file: file,
+  });
+};
 
 const gitInit = async () => {
-    const res = await execa('git', ['init'], {
-        cwd: opts.targetDir
-    })
-    if (res.failed) {
-        return Promise.reject(new Error('%s Failed to initialize git', chalk.red.bold('ERR')))
-    }
-    return opts.git
-}
+  const res = await execa("git", ["init"], {
+    cwd: opts.targetDir,
+  });
+  if (res.failed) {
+    return Promise.reject(
+      new Error("%s Failed to initialize git", chalk.red.bold("ERR"))
+    );
+  }
+  return opts.git;
+};
 
 export const createProject = async (opts) => {
-    opts = {
-        ...opts,
-    };
+  opts = {
+    ...opts,
+  };
 
-    if (!opts.targetDir) return
+  if (!opts.targetDir) return;
 
-    const fullPathName = new URL(import.meta.url).pathname;
+  const fullPathName = new URL(import.meta.url).pathname;
+  const rawDirectory = opts.targetDir;
 
-    // fullPathName.substr(fullPathName.indexOf('/')),
+  const templateDir = path
+    .join(
+      process.cwd(),
+      `${opts.targetDir}/node_modules/`,
+      opts.template.toLowerCase()
+    )
+    .replace("%20", " ");
 
-    const rawDirectory = opts.targetDir
+  opts.templateDirectory = templateDir;
 
-    const templateDir = path.join(
-        process.platform === "win32" ? fullPathName.substr(3) : fullPathName,
-        '../../templates',
-        opts.template.toLowerCase()
-    ).replace('%20', ' ');
-
-
-    const targetDirectory = `./${opts.targetDir}/`
-
-
-    opts.targetDir = targetDirectory;
-
-    opts.templateDirectory = templateDir;
-
-    opts.verbose && console.log(
-        chalk.red.bold('\n VERBOSE MODE \n '),
-        chalk.bold('\ntemplate-dir: '), templateDir,
-        chalk.bold('\ntarget-dir: '), targetDirectory,
-        chalk.bold('\nopts: '), opts,
+  opts.verbose &&
+    console.log(
+      chalk.red.bold("\n VERBOSE MODE \n "),
+      chalk.bold("\ntemplate-dir: "),
+      templateDir,
+      chalk.bold("\ntarget-dir: "),
+      opts.targetDir,
+      chalk.bold("\nopts: "),
+      opts
     );
-    opts.verbose && console.log('Found a bug? Create an issue at: \n', chalk.underline.blue('https://github.com/Nemesisly/create-discordjs-project/issues'), '\n');
 
-    try {
-        await access(templateDir, fs.constants.R_OK);
-    } catch (err) {
-        console.error('%s Invalid template name', chalk.bold.red('ERR'))
-        process.exit(1)
+  opts.verbose &&
+    console.log(
+      "Found a bug? Create an issue at: \n",
+      chalk.underline.blue(
+        "https://github.com/Nemesisly/create-discordjs-project/issues"
+      ),
+      "\n"
+    );
+
+  const tasks = new Listr(
+    [
+      {
+        title: "📁 Creating project directory",
+        task: () => createDirectory(opts),
+        skip: () => {
+          return new Promise((resolve, reject) => {
+            readdir(path.join(process.cwd(), opts.targetDir))
+              .then((files) => {
+                if(files.length == 0) resolve(true);
+                resolve(false)
+              })
+              .catch(() => {resolve(false)});
+          });
+        },
+      },
+      {
+        title: "🔗 Installing template",
+        task: async () => {
+          await execa("npm", ["init", "-y"], {
+            cwd: path.resolve(process.cwd(), opts.targetDir),
+            all: true,
+          });
+          await execa("npm", ["install", opts.template], {
+            cwd: path.resolve(process.cwd(), opts.targetDir),
+            all: true,
+          });
+        },
+      },
+      {
+        title: "📜 Copying project template into your project",
+        task: () => copyTemplateFiles(opts),
+      },
+      {
+        title: "🦺 Creating gitignore",
+        task: () => createGitignore(opts),
+      },
+      {
+        title: "☁ Initializing git",
+        task: () => gitInit(opts),
+        enabled: () => opts.git,
+      },
+      {
+        title: "🚚 Installing dependencies",
+        task: () =>
+          projectInstall({
+            cwd: opts.targetDir,
+          }),
+        skip: () =>
+          !opts.runInstall
+            ? "Pass --install to automatically install required dependencies"
+            : undefined,
+      },
+    ],
+    {
+      renderer: opts.verbose ? VerboseRenderer : undefined,
     }
+  );
 
-    const tasks = new Listr(
-        [
-            {
-                title: !opts.verbose ? '📜 Copying project files' : '',
-                task: () => copyTemplateFiles(opts),
-            },
-            {
-                title: !opts.verbose ? '❌ Creating gitignore' : '',
-                task: () => createGitignore(opts),
-            },
-            {
-                title: !opts.verbose ? '☁ Initializing git' : '',
-                task: () => initGit(opts),
-                enabled: () => opts.git,
-            },
-            {
-                title: !opts.verbose ? '🚚 Installing dependencies' : '',
-                task: () =>
-                    projectInstall({
-                        cwd: opts.targetDir,
-                    }),
-                skip: () =>
-                    !opts.runInstall
-                        ? 'Pass --install to automatically install required dependencies'
-                        : undefined,
-            },
-        ],
-        {
-            exitOnError: false,
-        }
+  await tasks.run();
+
+  console.log("%s Project ready", chalk.green.bold("DONE"));
+  opts.verbose ||
+    console.log(
+      "Here are some commands you can run in the project: ",
+      chalk.magenta(`\n\n${opts.pkgManager} start`),
+      "\n Starts the bot",
+      chalk.gray.italic(
+        " → The bot is run using nodemon meaning that if you save anything the code automatically restarts!"
+      ),
+      "\n\nWe suggest you run:\n\n",
+      chalk.magenta("cd"),
+      `${rawDirectory.trim()}\n`,
+      chalk.magenta(`cp .env.TEMPLATE .env\n`),
+      chalk.magenta(`nano .env\n`),
+      chalk.magenta(`${opts.pkgManager} start\n`),
     );
-
-    await tasks.run()
-    console.log('%s Project ready', chalk.green.bold('DONE'))
-    opts.verbose || console.log(
-        'Here are some commands you can run in the project: ',
-        chalk.cyanBright(`\n\n${opts.pkgManager} start`),
-        '\n Starts the bot',
-        chalk.gray.italic(' → The bot is run using nodemon meaning that if you save anything the code automatically restarts!'),
-        '\n\nWe suggest you run:\n\n',
-        chalk.cyanBright('cd'),
-        `${rawDirectory.trim()}\n`,
-        chalk.cyanBright(`${opts.pkgManager} start\n`))
-    opts.verbose || console.log('Happy hacking!')
-    return true;
-}
+  opts.verbose || console.log("Happy hacking!");
+  return true;
+};
