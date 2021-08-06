@@ -1,7 +1,8 @@
 // Checks version in package.lock and compares it to current npm version
-import packageJSON from "../package.json";
+import packageJSON from "../../package.json";
 import execa from "execa";
 import { maxSatisfying } from "semver";
+import chalk from "chalk";
 
 export const checkVersion = async () => {
   const { stdout } = await execa("npm", [

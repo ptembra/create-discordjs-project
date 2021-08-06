@@ -3,6 +3,7 @@ import inquirer from "inquirer";
 import chalk from "chalk";
 import { createProject } from "./main";
 import { checkVersion } from "./functions/checkVersion";
+import checkWifi from "./functions/checkWifi";
 
 const parseArgumentsIntoOptions = (rawArgs) => {
   const args = arg(
@@ -102,11 +103,12 @@ const promptMissingOptions = async (opts) => {
 
 export async function cli(args) {
   const runFunctions = async () => {
+    await checkWifi();
     await checkVersion();
     let opts = parseArgumentsIntoOptions(args);
     opts = await promptMissingOptions(opts);
     await createProject(opts);
   };
 
-  runFunctions();
+  await runFunctions();
 }
