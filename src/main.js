@@ -1,25 +1,20 @@
 import chalk from "chalk";
 import fs from "fs";
+import { readdir } from "fs/promises";
 import { promisify } from "util";
-import ncp from "ncp";
 import path from "path";
 import execa from "execa";
 import Listr from "listr";
+import VerboseRenderer from "listr-verbose-renderer";
+
 import copyTemplateFiles from "./functions/copyTemplateFiles";
+import createDirectory from "./functions/createDirectory";
 
 // REMOVE LATER
 import gitignore from "gitignore";
 import { projectInstall } from "pkg-install";
 
 const writeGitignore = promisify(gitignore.writeFile);
-const makeDir = promisify(fs.mkdir);
-
-const createDirectory = async (opts) => {
-  return makeDir(`./${opts.targetDir}`).catch((e) => {
-    console.log("%s Failed to create directory", chalk.bold.red("ERR"));
-    process.exit(1);
-  });
-};
 
 const createGitignore = async (opts) => {
   const file = fs.createWriteStream(path.join(opts.targetDir, ".gitignore"), {
@@ -48,8 +43,6 @@ export const createProject = async (opts) => {
     ...opts,
   };
 
-  console.log(opts.targetDir);
-
   if (!opts.targetDir) return;
 
   const fullPathName = new URL(import.meta.url).pathname;
@@ -71,10 +64,11 @@ export const createProject = async (opts) => {
       chalk.bold("\ntemplate-dir: "),
       templateDir,
       chalk.bold("\ntarget-dir: "),
-       opts.targetDir,
+      opts.targetDir,
       chalk.bold("\nopts: "),
       opts
     );
+
   opts.verbose &&
     console.log(
       "Found a bug? Create an issue at: \n",
@@ -84,28 +78,21 @@ export const createProject = async (opts) => {
       "\n"
     );
 
-  //   async function run(opts) {
-  //     console.log(1);
-
-  //     await createDirectory(opts);
-  //     console.log(1);
-
-  //     console.log(path.resolve(process.cwd(), opts.targetDir));
-
-  //     console.log(1);
-  //     // await copyTemplateFiles
-  //   }
-
-  //   await run(opts);
-
-  //   process.exit(0);
-
-  console.log(`${opts.templateDirectory}/.`);
   const tasks = new Listr(
     [
       {
-        title: !opts.verbose ? "📁 Creating project directory" : "",
+        title: "📁 Creating project directory",
         task: () => createDirectory(opts),
+        skip: () => {
+          return new Promise((resolve, reject) => {
+            readdir(path.join(process.cwd(), opts.targetDir))
+              .then((files) => {
+                if(files.length == 0) resolve(true);
+                resolve(false)
+              })
+              .catch(() => {resolve(false)});
+          });
+        },
       },
       {
         title: "🔗 Installing template",
@@ -121,22 +108,20 @@ export const createProject = async (opts) => {
         },
       },
       {
-        title: !opts.verbose
-          ? "📜 Copying project template into your project"
-          : "",
+        title: "📜 Copying project template into your project",
         task: () => copyTemplateFiles(opts),
       },
       {
-        title: !opts.verbose ? "🦺 Creating gitignore" : "",
+        title: "🦺 Creating gitignore",
         task: () => createGitignore(opts),
       },
       {
-        title: !opts.verbose ? "☁ Initializing git" : "",
+        title: "☁ Initializing git",
         task: () => gitInit(opts),
         enabled: () => opts.git,
       },
       {
-        title: !opts.verbose ? "🚚 Installing dependencies" : "",
+        title: "🚚 Installing dependencies",
         task: () =>
           projectInstall({
             cwd: opts.targetDir,
@@ -148,7 +133,7 @@ export const createProject = async (opts) => {
       },
     ],
     {
-      exitOnError: false,
+      renderer: opts.verbose ? VerboseRenderer : undefined,
     }
   );
 
@@ -166,7 +151,9 @@ export const createProject = async (opts) => {
       "\n\nWe suggest you run:\n\n",
       chalk.magenta("cd"),
       `${rawDirectory.trim()}\n`,
-      chalk.magenta(`${opts.pkgManager} start\n`)
+      chalk.magenta(`cp .env.TEMPLATE .env\n`),
+      chalk.magenta(`nano .env\n`),
+      chalk.magenta(`${opts.pkgManager} start\n`),
     );
   opts.verbose || console.log("Happy hacking!");
   return true;
