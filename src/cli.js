@@ -8,6 +8,7 @@ import { maxSatisfying } from 'semver';
 import packageJSON from '../package.json'
 
 const parseArgumentsIntoOptions = (rawArgs) => {
+    
     const args = arg(
         {
             '--git': Boolean,

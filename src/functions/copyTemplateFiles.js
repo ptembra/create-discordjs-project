@@ -1,15 +1,17 @@
 import path from "path";
 import { promisify } from "util";
 import ncp from "ncp";
+import {unlink, rmdir} from "fs/promises";
 // const access = promisify(fs.access);
 const copy = promisify(ncp);
 
+
 const copyTemplateFiles = async (opts) => {
-  console.log(
-    "THIS IS THE LOG",
-    opts.templateDirectory,
-    `\n${opts.targetDir}\\.`
-  );
-  //   await copy(opts.templateDirectory, `${opts.targetDir}\\.`);
+  const template = path.join(opts.templateDirectory, 'files');
+  const target = path.join(process.cwd(), opts.targetDir);
+  
+  await unlink(path.join(target, 'package-lock.json'))
+    await copy(template, target);
+    await rmdir(path.join(target, 'node_modules'), { recursive: true, force: true})
 };
 export default copyTemplateFiles;

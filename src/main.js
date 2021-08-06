@@ -55,12 +55,9 @@ export const createProject = async (opts) => {
   const fullPathName = new URL(import.meta.url).pathname;
   const rawDirectory = opts.targetDir;
 
-  // const targetDirectory = `./${opts.targetDir}`
-  // opts.targetDir = targetDirectory;
-
   const templateDir = path
     .join(
-      process.platform === "win32" ? fullPathName.substr(3) : fullPathName,
+      process.cwd(),
       `${opts.targetDir}/node_modules/`,
       opts.template.toLowerCase()
     )
@@ -74,7 +71,7 @@ export const createProject = async (opts) => {
       chalk.bold("\ntemplate-dir: "),
       templateDir,
       chalk.bold("\ntarget-dir: "),
-      targetDirectory,
+       opts.targetDir,
       chalk.bold("\nopts: "),
       opts
     );
