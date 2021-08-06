@@ -40,7 +40,8 @@
     "inquirer": "^8.1.2",
     "listr": "^0.14.3",
     "ncp": "^2.0.0",
-    "pkg-install": "^1.0.0"
+    "pkg-install": "^1.0.0",
+    "semver": "^7.3.5"
   },
   "devDependencies": {}
 }
