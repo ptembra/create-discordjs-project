@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import fs from "fs";
-import { readdir } from "fs/promises";
+import { promises } from "fs";
 import { promisify } from "util";
 import path from "path";
 import execa from "execa";
@@ -9,15 +9,21 @@ import VerboseRenderer from "listr-verbose-renderer";
 
 import copyTemplateFiles from "./functions/copyTemplateFiles";
 import createDirectory from "./functions/createDirectory";
+import options from "./types/options";
 
 // REMOVE LATER
-import gitignore from "gitignore";
-import { projectInstall } from "pkg-install";
+import { writeFile } from "gitignore";
 
-const writeGitignore = promisify(gitignore.writeFile);
+const writeGitignore = (opts: { type: string; file: fs.WriteStream }) =>
+  new Promise((resolve, reject) => {
+    writeFile(opts, (err: any, val: any) => {
+      if (err) reject(err);
+      else resolve(val);
+    });
+  });
 
-const createGitignore = async (opts) => {
-  const file = fs.createWriteStream(path.join(opts.targetDir, ".gitignore"), {
+const createGitignore = async (opts: options) => {
+  const file = fs.createWriteStream(path.join(opts.target, ".gitignore"), {
     flags: "a",
   });
   return writeGitignore({
@@ -26,45 +32,34 @@ const createGitignore = async (opts) => {
   });
 };
 
-const gitInit = async () => {
+const gitInit = async (opts: options) => {
   const res = await execa("git", ["init"], {
-    cwd: opts.targetDir,
+    cwd: opts.target,
   });
   if (res.failed) {
     return Promise.reject(
-      new Error("%s Failed to initialize git", chalk.red.bold("ERR"))
+      new Error(["%s Failed to initialize git", chalk.red.bold("ERR")].join())
     );
   }
   return opts.git;
 };
 
-export const createProject = async (opts) => {
+export const createProject = async (opts: options) => {
   opts = {
     ...opts,
   };
 
-  if (!opts.targetDir) return;
+  if (!opts.target) return;
 
-  const fullPathName = new URL(import.meta.url).pathname;
-  const rawDirectory = opts.targetDir;
-
-  const templateDir = path
-    .join(
-      process.cwd(),
-      `${opts.targetDir}/node_modules/`,
-      opts.template.toLowerCase()
-    )
-    .replace("%20", " ");
-
-  opts.templateDirectory = templateDir;
+  const rawDirectory = opts.target;
 
   opts.verbose &&
     console.log(
       chalk.red.bold("\n VERBOSE MODE \n "),
       chalk.bold("\ntemplate-dir: "),
-      templateDir,
+      opts.templateDir,
       chalk.bold("\ntarget-dir: "),
-      opts.targetDir,
+      opts.target,
       chalk.bold("\nopts: "),
       opts
     );
@@ -85,12 +80,15 @@ export const createProject = async (opts) => {
         task: () => createDirectory(opts),
         skip: () => {
           return new Promise((resolve, reject) => {
-            readdir(path.join(process.cwd(), opts.targetDir))
+            promises
+              .readdir(opts.targetDir)
               .then((files) => {
-                if(files.length == 0) resolve(true);
-                resolve(false)
+                if (files.length == 0) resolve(true);
+                resolve(false);
               })
-              .catch(() => {resolve(false)});
+              .catch(() => {
+                resolve(false);
+              });
           });
         },
       },
@@ -98,11 +96,11 @@ export const createProject = async (opts) => {
         title: "🔗 Installing template",
         task: async () => {
           await execa("npm", ["init", "-y"], {
-            cwd: path.resolve(process.cwd(), opts.targetDir),
+            cwd: opts.targetDir,
             all: true,
           });
           await execa("npm", ["install", opts.template], {
-            cwd: path.resolve(process.cwd(), opts.targetDir),
+            cwd: opts.targetDir,
             all: true,
           });
         },
@@ -123,8 +121,9 @@ export const createProject = async (opts) => {
       {
         title: "🚚 Installing dependencies",
         task: () =>
-          projectInstall({
+          execa(opts.pkgManager, ["install"], {
             cwd: opts.targetDir,
+            all: true,
           }),
         skip: () =>
           !opts.runInstall
@@ -153,7 +152,7 @@ export const createProject = async (opts) => {
       `${rawDirectory.trim()}\n`,
       chalk.magenta(`cp .env.TEMPLATE .env\n`),
       chalk.magenta(`nano .env\n`),
-      chalk.magenta(`${opts.pkgManager} start\n`),
+      chalk.magenta(`${opts.pkgManager} start\n`)
     );
   opts.verbose || console.log("Happy hacking!");
   return true;

@@ -1,20 +1,25 @@
-import { mkdir } from "fs/promises";
+import { mkdir as mk } from "fs";
 import path from "path";
 import chalk from "chalk";
 import { existsSync } from "fs";
+import options from "src/types/options";
+import { promisify } from "util";
 
-const createDirectory = async (opts) => {
+const mkdir = promisify(mk);
+
+const createDirectory = async (opts: options) => {
   return new Promise(async (resolve, reject) => {
-    mkdir(path.join(process.cwd(), opts.targetDir))
+    mkdir(opts.targetDir)
       .then(resolve)
-      .catch(() => {
-        if (existsSync(path.join(process.cwd(), opts.targetDir))) {
+      .catch((err: any) => {
+        if (existsSync(opts.targetDir)) {
           console.error(
             "%s Failed to create directory, directory appears to already exists and to have files inside of it",
             chalk.bold.red("ERR")
           );
         } else {
           console.error("%s Failed to create directory", chalk.bold.red("ERR"));
+          if (opts.verbose) console.error(err);
         }
         process.exit(1);
       });

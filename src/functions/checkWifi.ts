@@ -2,7 +2,7 @@ import dns from "dns";
 import chalk from "chalk";
 
 const checkWifi = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise<void>((resolve, reject) => {
     dns.resolve("npmjs.com", (err) => {
       if (err) {
         console.log("%s Not connected to Wi-Fi", chalk.bold.red("ERR"));

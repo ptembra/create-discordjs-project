@@ -1,8 +1,9 @@
 // Checks version in package.lock and compares it to current npm version
-import packageJSON from "../../package.json";
 import execa from "execa";
 import { maxSatisfying } from "semver";
 import chalk from "chalk";
+
+const { version }: { version: string } = require("../../package.json");
 
 export const checkVersion = async () => {
   const { stdout } = await execa("npm", [
@@ -10,9 +11,9 @@ export const checkVersion = async () => {
     "create-discordjs-project",
     "version",
   ]);
-  const versions = [packageJSON.version, stdout];
+  const versions = [version, stdout];
   let newestVersion = maxSatisfying(versions, "*");
-  if (newestVersion != packageJSON.version) {
+  if (newestVersion != version) {
     console.log(
       "%s Outdated version!",
       chalk.bold.yellow("WARNING"),
