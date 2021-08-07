@@ -8,6 +8,7 @@ import checkWifi from "./functions/checkWifi";
 
 import options, { incompleteOptions } from "./types/options";
 import getDirs from "./functions/getDirs";
+import validateTemplate from "./functions/validateTemplate";
 
 const parseArgumentsIntoOptions = async (
   rawArgs: string[]
@@ -106,13 +107,10 @@ const promptMissingOptions = async (
 };
 
 export async function cli(args: string[]) {
-  const runFunctions = async () => {
-    await checkWifi();
-    await checkVersion();
-    const incompleteOptions = await parseArgumentsIntoOptions(args);
-    const opts = await promptMissingOptions(incompleteOptions);
-    await createProject(opts);
-  };
-
-  await runFunctions();
+  await checkWifi();
+  await checkVersion();
+  const incompleteOptions = await parseArgumentsIntoOptions(args);
+  const opts = await promptMissingOptions(incompleteOptions);
+  await validateTemplate(opts);
+  await createProject(opts);
 }
