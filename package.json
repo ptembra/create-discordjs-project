@@ -4,8 +4,7 @@
   "description": "A CLI that creates a simple discordjs project",
   "main": "src/index.js",
   "bin": {
-    "@nemesisly/create-discordjs-project": "bin/create-discordjs-project",
-    "create-discordjs-project": "bin/create-discordjs-project"
+    "create-discordjs-project": "dist/bin/create-discordjs-project.js"
   },
   "homepage": "https://github.com/Nemesisly/create-discordjs-project#readme",
   "publishConfig": {
@@ -16,13 +15,15 @@
     "url": "https://github.com/Nemesisly/create-discordjs-project"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "npx tsc -w",
+    "build": "npx tsc",
+    "prepublishOnly": "npm run build && npm version patch"
   },
   "readme": "README.md",
   "files": [
     "bin/",
-    "src/",
-    "templates/"
+    "src/"
   ],
   "keywords": [
     "cli",
@@ -32,16 +33,22 @@
   "author": "Nemesisly",
   "license": "MIT",
   "dependencies": {
-    "arg": "^5.0.0",
-    "chalk": "^4.1.2",
+    "enquirer": "^2.3.6",
     "esm": "^3.2.25",
     "execa": "^5.1.1",
     "gitignore": "^0.7.0",
-    "inquirer": "^8.1.2",
+    "kleur": "^4.1.4",
     "listr": "^0.14.3",
     "ncp": "^2.0.0",
-    "pkg-install": "^1.0.0",
-    "semver": "^7.3.5"
+    "semver": "^7.3.5",
+    "yargs": "^17.1.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/listr": "^0.14.4",
+    "@types/ncp": "^2.0.5",
+    "@types/node": "^11.15.54",
+    "@types/semver": "^7.3.8",
+    "@types/yargs": "^17.0.2",
+    "typescript": "^4.3.5"
+  }
 }
