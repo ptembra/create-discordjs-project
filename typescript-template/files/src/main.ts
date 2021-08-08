@@ -31,5 +31,8 @@ dotenv.config({
 });
 
 client.login(process.env.TOKEN).catch((e) => {
-  console.log("%s Invalid Token Provided!", chalk.bgRed.white.bold(" ERROR "));
+  console.error(
+    "%s An invalid token was provided in .env",
+    chalk.bgRed.white.bold(" ERR ")
+  );
 });
