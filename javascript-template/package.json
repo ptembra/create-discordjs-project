@@ -1,6 +1,9 @@
 {
-  "name": "@nemesisly/cdjs-javascript-template",
-  "version": "1.0.2",
+  "name": "@nemesisly/javascript",
+  "version": "1.0.0",
+  "keywords": [
+    "cdjs-template"
+  ],
   "description": "Official javascript template for create-discordjs-project",
   "publishConfig": {
     "access": "public"

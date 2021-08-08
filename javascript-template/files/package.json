@@ -3,9 +3,6 @@
   "scripts": {
     "start": "nodemon"
   },
-  "keywords": [
-    "cdjs-template"
-  ],
   "author": "Nemesisly",
   "license": "MIT",
   "dependencies": {
