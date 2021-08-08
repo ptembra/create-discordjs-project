@@ -15,7 +15,6 @@ const validateTemplate = async (opts: options) => {
     process.exit(1);
   }
   const res = JSON.parse(stdout);
-  console.log(res);
   opts.verbose && console.log("\n", res);
   if (res.includes("cdjs-template")) {
     console.log("%s Valid template", kleur.bold().green("SUCCESS"));

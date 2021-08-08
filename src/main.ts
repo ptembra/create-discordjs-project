@@ -151,10 +151,20 @@ export const createProject = async (opts: options) => {
       `${rawDirectory.trim()}\n`,
       kleur.magenta("cp"),
       ".env.TEMPLATE .env\n",
-      kleur.magenta(`nano .env\n`),
+      kleur.magenta(
+        `${
+          process.platform === "win32"
+            ? process.title.toLowerCase().indexOf("cmd") < -1
+              ? `".env"`
+              : process.title.toLowerCase().indexOf("powershell") < -1 && "ii"
+            : "nano"
+        }`
+      ),
+      `${process.title.toLowerCase().indexOf("cmd") < -1 ? "" : ".env"}`,
       kleur.magenta(`${opts.pkgManager}`),
       "start"
     );
+
   opts.verbose || console.log("Happy hacking!");
   return true;
 };
