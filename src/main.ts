@@ -161,7 +161,7 @@ export const createProject = async (opts: options) => {
         }`
       ),
       `${process.title.toLowerCase().indexOf("cmd") < -1 ? "" : ".env"}`,
-      kleur.magenta(`${opts.pkgManager}`),
+      kleur.magenta(`\n ${opts.pkgManager}`),
       "start"
     );
 
