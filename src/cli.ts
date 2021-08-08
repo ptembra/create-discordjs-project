@@ -1,7 +1,7 @@
 import yargs from "yargs/yargs";
 import { hideBin } from "yargs/helpers";
-import inquirer from "inquirer";
-import chalk from "chalk";
+import { prompt } from "enquirer";
+import kleur from "kleur";
 import { createProject } from "./main";
 import { checkVersion } from "./functions/checkVersion";
 import checkWifi from "./functions/checkWifi";
@@ -39,7 +39,7 @@ const promptMissingOptions = async (
   opts: incompleteOptions
 ): Promise<options> => {
   if (opts.target) {
-    const defaultTemplate = "@nemesisly/cdjs-javascript-template";
+    const defaultTemplate = "@nemesisly/javascript";
     const defaultPkgManager = "npm";
     if (opts.skipPrompts) {
       return compileDirs({
@@ -55,16 +55,16 @@ const promptMissingOptions = async (
         type: "input",
         name: "template",
         message: "Please choose a template",
-        default: defaultTemplate,
+        initial: defaultTemplate,
       });
     }
     if (!opts.pkgManager) {
       questions.push({
-        type: "list",
+        type: "select",
         name: "pkgManager",
         message: "Please choose a package manager",
         choices: ["npm", "yarn"],
-        default: defaultPkgManager,
+        initial: defaultPkgManager,
       });
     }
     if (!opts.git) {
@@ -72,7 +72,7 @@ const promptMissingOptions = async (
         type: "confirm",
         name: "git",
         message: "Do you want to initialize a git repo?",
-        default: false,
+        initial: false,
       });
     }
     if (!opts.runInstall) {
@@ -80,11 +80,17 @@ const promptMissingOptions = async (
         type: "confirm",
         name: "runInstall",
         message: "Do you want to install the default dependencies?",
-        default: false,
+        initial: false,
       });
     }
 
-    const answers = await inquirer.prompt(questions);
+    // const answers = await inquirer.prompt(questions);
+    const answers: {
+      template: string;
+      pkgManager: "npm" | "yarn";
+      git: boolean;
+      runInstall: boolean;
+    } = await prompt(questions);
 
     return compileDirs({
       ...opts,
@@ -96,11 +102,11 @@ const promptMissingOptions = async (
   } else {
     console.log(
       "Please specify the project directory:\n",
-      chalk.magenta("    create-discordjs-project"),
-      chalk.greenBright("<project-directory>\n\n"),
-      chalk.reset("For example:\n"),
-      chalk.magenta("    create-discordjs-project"),
-      chalk.greenBright("my-awesome-bot")
+      kleur.magenta("    create-discordjs-project"),
+      kleur.green("<project-directory>\n\n"),
+      kleur.reset("For example:\n"),
+      kleur.magenta("    create-discordjs-project"),
+      kleur.green("my-awesome-bot")
     );
     process.exit(0);
   }

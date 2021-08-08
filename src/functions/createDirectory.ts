@@ -1,6 +1,6 @@
 import { mkdir as mk } from "fs";
 import path from "path";
-import chalk from "chalk";
+import kleur from "kleur";
 import { existsSync } from "fs";
 import options from "src/types/options";
 import { promisify } from "util";
@@ -15,10 +15,13 @@ const createDirectory = async (opts: options) => {
         if (existsSync(opts.targetDir)) {
           console.error(
             "%s Failed to create directory, directory appears to already exists and to have files inside of it",
-            chalk.bold.red("ERR")
+            kleur.bold().red("ERR")
           );
         } else {
-          console.error("%s Failed to create directory", chalk.bold.red("ERR"));
+          console.error(
+            "%s Failed to create directory",
+            kleur.bold().red("ERR")
+          );
           if (opts.verbose) console.error(err);
         }
         process.exit(1);
