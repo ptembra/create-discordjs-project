@@ -146,27 +146,18 @@ export const createProject = async (opts: options) => {
         .italic(
           " → The bot is run using nodemon meaning that if you save anything the code automatically restarts!"
         ),
+      kleur.italic().gray("The following doesn't work for CMD"),
       "\n\nWe suggest you run:\n\n",
       kleur.magenta("cd"),
       `${rawDirectory.trim()}\n`,
       kleur.magenta("cp"),
       ".env.TEMPLATE .env\n",
-      kleur.magenta(
-        `${
-          process.platform === "win32"
-            ? process.title.toLowerCase().indexOf("cmd") > -1
-              ? `".env"`
-              : process.title.toLowerCase().indexOf("powershell") > -1
-              ? "ii"
-              : "./"
-            : "nano"
-        }`
-      ),
-      `${process.title.toLowerCase().indexOf("cmd") < -1 ? "" : ".env"}`,
+      kleur.magenta(`${process.platform === "win32" ? "ii" : "nano"}`),
+      `.env`,
       kleur.magenta(`\n ${opts.pkgManager}`),
       "start"
     );
 
-  opts.verbose || console.log("Happy hacking!");
+  opts.verbose || console.log("\nHappy hacking!");
   return true;
 };
