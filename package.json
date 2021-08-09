@@ -1,6 +1,6 @@
 {
   "name": "create-discordjs-project",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "A CLI that creates a simple discordjs project",
   "main": "src/index.js",
   "bin": {
@@ -18,7 +18,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "npx tsc -w",
     "build": "npx tsc",
-    "prepublishOnly": "npm run build && npm version patch"
+    "prepublish": "npm run build"
   },
   "readme": "README.md",
   "files": [
