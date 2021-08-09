@@ -154,9 +154,9 @@ export const createProject = async (opts: options) => {
       kleur.magenta(
         `${
           process.platform === "win32"
-            ? process.title.toLowerCase().indexOf("cmd") < -1
+            ? process.title.toLowerCase().indexOf("cmd") > -1
               ? `".env"`
-              : process.title.toLowerCase().indexOf("powershell") < -1
+              : process.title.toLowerCase().indexOf("powershell") > -1
               ? "ii"
               : "./"
             : "nano"
