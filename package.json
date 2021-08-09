@@ -1,7 +1,7 @@
 {
   "name": "create-discordjs-project",
-  "version": "2.3.3",
-  "description": "A CLI that creates a simple discordjs project",
+  "version": "2.3.4",
+  "description": "Skip the annoying steps of setting up your enviroment and go straight to coding.",
   "main": "src/index.js",
   "bin": {
     "create-discordjs-project": "dist/bin/create-discordjs-project.js"
