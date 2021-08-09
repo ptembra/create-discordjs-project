@@ -1,6 +1,6 @@
 {
   "name": "create-discordjs-project",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "description": "A CLI that creates a simple discordjs project",
   "main": "src/index.js",
   "bin": {
@@ -22,9 +22,7 @@
   },
   "readme": "README.md",
   "files": [
-    "bin/",
-    "src/",
-    "tsconfig.json"
+    "dist/"
   ],
   "keywords": [
     "cli",

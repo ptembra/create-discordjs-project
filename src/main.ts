@@ -156,7 +156,9 @@ export const createProject = async (opts: options) => {
           process.platform === "win32"
             ? process.title.toLowerCase().indexOf("cmd") < -1
               ? `".env"`
-              : process.title.toLowerCase().indexOf("powershell") < -1 && "ii"
+              : process.title.toLowerCase().indexOf("powershell") < -1
+              ? "ii"
+              : "./"
             : "nano"
         }`
       ),
