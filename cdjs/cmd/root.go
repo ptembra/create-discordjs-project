@@ -15,10 +15,10 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "cdjs",
-	Short: "Skip the annoying steps of setting up your enviroment and go straight to coding.",
-	Long: color.With(color.Green, `CDJS is a CLI that supercharges your development of DiscordJS bots.
-This application removes the need for extensive annoying boilerplaters, allowing you to go straight to coding.`),
-	Version: fmt.Sprintf("%v", *utils.PackageJSON().Version),
+	Short: "Skip the annoying steps of setting up your environment and go straight to coding.",
+	Long: color.With(color.Green, `cdjs is a CLI that supercharges your development of DiscordJS bots.
+This application removes the need for extensive annoying boilerplates, allowing you to go straight to coding.`),
+	Version: fmt.Sprintf("%v", *utils.ReadPackageJSON().Version),
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {

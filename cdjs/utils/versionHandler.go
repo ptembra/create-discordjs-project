@@ -15,51 +15,40 @@ type json_struct struct {
 	Package_Name *string `json:"name"`
 }
 
-func PackageJSON() *json_struct {
+func ReadPackageJSON() *json_struct {
 	PACKAGE_JSON_PATH := "../package.json"
 	content, err := ioutil.ReadFile(PACKAGE_JSON_PATH)
-	if err != nil {
-		fmt.Println(err)
-	}
+	HandleError(err)
 
 	var data *json_struct
 
 	err = json.Unmarshal([]byte(string(content)), &data)
-	if err != nil {
-		fmt.Println(err)
-	}
+	HandleError(err)
 	return data
 }
 
 func CompareVersions() {
 
-	newestVersion, err := exec.Command("npm", "info", *PackageJSON().Package_Name, "version").Output()
-	if err != nil {
-		fmt.Println(err)
-	}
-	currentVersion := *PackageJSON().Version
+	newestVersion, err := exec.Command("npm", "info", *ReadPackageJSON().Package_Name, "version").Output()
+	HandleError(err)
+	currentVersion := *ReadPackageJSON().Version
 
 	v1, err := version.NewVersion(currentVersion)
-	v2, err := version.NewVersion(string(newestVersion))
+	HandleError(err)
 
-	if v1.LessThan(v2) {
-		println("less")
-	}
+	v2, err := version.NewVersion(string(newestVersion))
+	HandleError(err)
 
 	switch v1.Compare(v2) {
 	case -1:
 		fmt.Println("Smaller")
-		break
-
 	case 0:
 		fmt.Println("Equal")
-		break
 	case 1:
 		fmt.Println("Larger")
-		break
 	}
 }
 
 func GetVersionString() string {
-	return fmt.Sprintf("%v version: %v\n", *PackageJSON().Package_Name, color.With(color.Cyan, *PackageJSON().Version))
+	return fmt.Sprintf("%v version: %v\n", *ReadPackageJSON().Package_Name, color.With(color.Cyan, *ReadPackageJSON().Version))
 }
