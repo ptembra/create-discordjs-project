@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/TwiN/go-color"
+	"github.com/containerd/console"
 	"golang.org/x/exp/slices"
-	"golang.org/x/term"
 )
 
 // ANSI ESCAPE CODES
@@ -17,6 +17,7 @@ var AEC = map[string]string{
 	"UP":        "\033[A",
 	"DOWN":      "\033[B",
 	"CLEARLINE": "\033[2K",
+	"CLEARREST": "\033[0J",
 	"TOGGLEVIS": "\033[28m",
 }
 
@@ -28,11 +29,11 @@ func formatPromptString(prompt string, status int8, output string) string {
 	fmt.Printf("%v", AEC["CLEARLINE"])
 	switch status {
 	case -1:
-		return fmt.Sprintf("\r%[2]vX%[4]v %[1]v %[3]v⋅%[4]v %[2]v%[5]v%[4]v\n", color.With(color.Bold, prompt), color.Red, color.Black, color.Reset, output)
+		return fmt.Sprintf("\r%[2]vX%[4]v %[1]v %[3]v⋅%[4]v %[2]v%[5]v%[4]v\n", color.With(color.Bold, prompt), color.Red, color.Gray, color.Reset, output)
 	case 0:
-		return fmt.Sprintf("%[2]v?%[4]v %[1]v %[3]v⋅%[4]v %[5]v", color.With(color.Bold, prompt), color.Cyan, color.Black, color.Reset, output)
+		return fmt.Sprintf("%[2]v?%[4]v %[1]v %[3]v⋅%[4]v %[5]v", color.With(color.Bold, prompt), color.Cyan, color.Gray, color.Reset, output)
 	case 1:
-		return fmt.Sprintf("\r%[6]v✓%[4]v %[1]v %[3]v⋅%[4]v %[2]v%[5]v%[4]v\n", color.With(color.Bold, prompt), color.Green, color.Black, color.Reset, output, color.Cyan)
+		return fmt.Sprintf("\r%[6]v✓%[4]v %[1]v %[3]v⋅%[4]v %[2]v%[5]v%[4]v\n", color.With(color.Bold, prompt), color.Green, color.Gray, color.Reset, output, color.Cyan)
 	default:
 		return "Error"
 	}
@@ -55,10 +56,11 @@ func StringInput(prompt string) string {
 // String Input but with a placeholder value
 func OpinionatedStringInput(prompt string, placeholder string) string {
 	// Switch terminal modes
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
-	utils.HandleError(err)
+	current := console.Current()
+	defer current.Close()
 
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
+	err := current.SetRaw()
+	utils.HandleError(err)
 
 	// Input buffer
 	var inputBytes []byte = make([]byte, 3)
@@ -74,7 +76,7 @@ func OpinionatedStringInput(prompt string, placeholder string) string {
 	updateFormattedPrompt := func() {
 		// prompt = fmt.Sprint(strings.Index(prettyOutput, placeholder))
 		if len(output) <= 1 {
-			fmt.Printf("\r%[1]s%[2]s", formatPromptString(prompt, 0, prettyOutput), fmt.Sprintf("%s\033[%vD", color.With(color.Black, placeholder), len(placeholder)))
+			fmt.Printf("\r%[1]s%[2]s", formatPromptString(prompt, 0, prettyOutput), fmt.Sprintf("%s\033[%vD", color.With(color.Gray, placeholder), len(placeholder)))
 		} else {
 			fmt.Printf("\r%[1]s", formatPromptString(prompt, 0, prettyOutput))
 		}
@@ -123,7 +125,7 @@ func OpinionatedStringInput(prompt string, placeholder string) string {
 		if inputBytes[0] == 3 || inputBytes[0] == 4 {
 			fmt.Print(formatPromptString(prompt, -1, prettyOutput))
 			fmt.Print("\r")
-			term.Restore(int(os.Stdin.Fd()), oldState)
+			defer current.Close()
 			os.Exit(1)
 		}
 
@@ -142,18 +144,19 @@ func OpinionatedStringInput(prompt string, placeholder string) string {
 }
 
 func BoolInput(prompt string, defaultInput bool) bool {
-	// Switch terminal modes
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
-	utils.HandleError(err)
-	prompt += color.With(color.Black, " (y\\N)")
+	current := console.Current()
+	defer current.Close()
 
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
+	err := current.SetRaw()
+	utils.HandleError(err)
 
 	// Input buffer
 	var inputBytes []byte = make([]byte, 1)
 
+	prompt += color.With(color.Gray, " (y\\N)")
+
 	updateBoolInput := func() {
-		fmt.Printf("\r%[1]s%[2]s", formatPromptString(prompt, 0, ""), fmt.Sprintf("%s\033[%vD", color.With(color.Black, defaultInput), len(fmt.Sprint(defaultInput))))
+		fmt.Printf("\r%[1]s%[2]s", formatPromptString(prompt, 0, ""), fmt.Sprintf("%s\033[%vD", color.With(color.Gray, defaultInput), len(fmt.Sprint(defaultInput))))
 	}
 
 	updateBoolInput()
@@ -163,7 +166,7 @@ func BoolInput(prompt string, defaultInput bool) bool {
 		// Handle Ctrl-C and Ctrl-D
 		if inputBytes[0] == 3 || inputBytes[0] == 4 {
 			fmt.Print(formatPromptString(prompt, -1, ""))
-			term.Restore(int(os.Stdin.Fd()), oldState)
+			current.Close()
 			os.Exit(1)
 		}
 
@@ -188,11 +191,20 @@ func BoolInput(prompt string, defaultInput bool) bool {
 }
 
 func PickerInput(prompt string, options []string) string {
+
 	// Switch terminal modes
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	// oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	// utils.HandleError(err)
+
+	// defer term.Restore(int(os.Stdin.Fd()), oldState)
+
+	current := console.Current()
+	defer current.Close()
+
+	err := current.SetRaw()
 	utils.HandleError(err)
 
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
+	// _ := terminal.NewTerminal(current, "")
 
 	inputDown := []byte{27, 91, 66}
 	inputUp := []byte{27, 91, 65}
@@ -216,34 +228,46 @@ func PickerInput(prompt string, options []string) string {
 	}
 
 	updatePickerInput := func() {
-		fmt.Printf("%[1]s\n\r%[2]v\033[%[3]vA", formatPromptString(prompt, 0, color.With(color.Black, "...\033[3D")), formatList(), len(options)+1)
+		fmt.Printf("%[1]s\n\r%[2]v\033[%[3]vA", formatPromptString(prompt, 0, color.With(color.Gray, "...\033[3D")), formatList(), len(options)+1)
+	}
+
+	pickerDown := func() {
+		if index < len(options)-1 {
+			index++
+		} else if index == len(options)-1 {
+			index = 0
+		}
+	}
+
+	pickerUp := func() {
+		if index > 0 {
+			index--
+		} else if index == 0 {
+			index = len(options) - 1
+		}
 	}
 
 	updatePickerInput()
 	fmt.Print(AEC["TOGGLEVIS"])
 	for {
-		os.Stdin.Read(inputBytes)
+		// os.Stdin.Read(inputBytes)
+		console.Current().Read(inputBytes)
+
 		if slices.Compare(inputBytes, inputDown) == 0 || inputBytes[0] == 9 {
-			if index < len(options)-1 {
-				index++
-			} else if index == len(options)-1 {
-				index = 0
-			}
+			pickerDown()
 			updatePickerInput()
 		}
 		if slices.Compare(inputBytes, inputUp) == 0 {
-			if index > 0 {
-				index--
-			} else if index == 0 {
-				index = len(options) - 1
-			}
+			pickerUp()
 			updatePickerInput()
 		}
+
 		// Handle Ctrl-C and Ctrl-D
 		if inputBytes[0] == 3 || inputBytes[0] == 4 {
-			term.Restore(int(os.Stdin.Fd()), oldState)
+			current.Close()
 			fmt.Print("\r")
 			fmt.Print(AEC["TOGGLEVIS"])
+			fmt.Printf("\033[0J\r")
 			os.Exit(1)
 		}
 
